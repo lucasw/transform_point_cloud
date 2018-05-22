@@ -9,3 +9,5 @@ https://github.com/lucasw/dynamic_reconfigure_tools is required.
 ```
 roslaunch transform_point_cloud demo.launch
 ```
+![rviz and rqt demo.launch](data/transform_point_cloud.png)
+
