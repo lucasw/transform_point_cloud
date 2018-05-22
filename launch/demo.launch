@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node name="transform_point_cloud" pkg="transform_point_cloud"
+      type="transform_point_cloud"
+      output="screen" >
+    <param name="frame" value="frame1" />
+  </node>
+
+  <node name="generate_point_cloud" pkg="transform_point_cloud"
+      type="generate_point_cloud.py"
+      output="screen" >
+  </node>
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="static_frame1"
+      args="1 5 5 0.1 0.2 0.3 map frame1" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="static_frame2"
+      args="0 0 -6.0 0.0 0.0 0.25 frame1 frame2" />
+
+  <!-- TODO(lucasw) rviz -->
+  <node name="rviz" pkg="rviz" type="rviz"
+      args="-d $(find transform_point_cloud)/config/pc2.rviz"
+      required="true"
+      output="screen">
+  </node>
+</launch>
