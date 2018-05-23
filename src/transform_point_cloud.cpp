@@ -14,6 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/point_cloud2_iterator.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <transform_point_cloud/LookupTransformConfig.h>
@@ -39,16 +40,26 @@ class TransformPointCloud
     config_ = config;
   }
 
+  void printPointCloud(const sensor_msgs::PointCloud2& pc, const size_t max_count = 8)
+  {
+    // https://answers.ros.org/question/11556/datatype-to-access-pointcloud2/
+    sensor_msgs::PointCloud2ConstIterator<float> iter_x(pc, "x");
+    sensor_msgs::PointCloud2ConstIterator<float> iter_y(pc, "y");
+    sensor_msgs::PointCloud2ConstIterator<float> iter_z(pc, "z");
+    size_t count = 0;
+    for (; (iter_x != iter_x.end()) && (iter_y != iter_y.end()) && (iter_z != iter_z.end()) &&
+         (count < max_count);
+         ++iter_x, ++ iter_y, ++iter_z, ++count)
+    {
+      ROS_DEBUG_STREAM(count << " " << *iter_x << " " << *iter_y << " " << *iter_z);
+    }
+  }
+
   void pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg)
   {
     // ROS_INFO_STREAM(msg->header.frame_id << " " << target_frame_);
-    #if 0
-    // convert to pcl_ros and print a few points
-    for (size_t i = 0; i < 8 && i < msg->points.size(); ++i)
-    {
-      ROS_INFO_STREAM(i << " " << msg->
-    }
-    #endif
+    ROS_DEBUG_STREAM("input:");
+    printPointCloud(*msg, 8);
     geometry_msgs::TransformStamped transform;
     try
     {
@@ -66,6 +77,8 @@ class TransformPointCloud
           ros::Duration(config_.timeout));
       sensor_msgs::PointCloud2 cloud_out;
       tf2::doTransform(*msg, cloud_out, transform);
+      ROS_DEBUG_STREAM("output:");
+      printPointCloud(cloud_out, 8);
       pub_.publish(cloud_out);
     }
     catch (tf2::TransformException& ex)
