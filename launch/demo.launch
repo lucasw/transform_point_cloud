@@ -7,6 +7,13 @@
     <param name="target_frame" value="frame1" />
   </node>
 
+  <node name="transform_point_cloud_py" pkg="transform_point_cloud"
+      type="transform_point_cloud_py.py"
+      output="screen" >
+    <param name="target_frame" value="frame2" />
+    <remap from="point_cloud" to="transform_point_cloud/point_cloud" />
+  </node>
+
   <node name="generate_point_cloud" pkg="transform_point_cloud"
       type="generate_point_cloud.py"
       output="screen" ns="transform_point_cloud" >

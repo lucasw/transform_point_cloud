@@ -5,7 +5,7 @@
       "keys": {
         "running-plugins": {
           "type": "repr",
-          "repr": "{u'rqt_dr_single/dr_single': [1]}"
+          "repr": "{u'rqt_dr_single/dr_single': [1, 2]}"
         }
       },
       "groups": {
@@ -43,6 +43,41 @@
               "groups": {}
             }
           }
+        },
+        "plugin__rqt_dr_single__dr_single__2": {
+          "keys": {},
+          "groups": {
+            "dock_widget__DrSingleUi": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'Dynamic Reconfigure Single (2)'"
+                }
+              },
+              "groups": {}
+            },
+            "plugin": {
+              "keys": {
+                "hide_dropdown": {
+                  "type": "repr",
+                  "repr": "False"
+                },
+                "server_name": {
+                  "type": "repr",
+                  "repr": "u'/transform_point_cloud_py'"
+                }
+              },
+              "groups": {}
+            }
+          }
         }
       }
     },
@@ -50,13 +85,13 @@
       "keys": {
         "geometry": {
           "type": "repr(QByteArray.hex)",
-          "repr(QByteArray.hex)": "QtCore.QByteArray('01d9d0cb00020000000004b4000000620000073e000002de000004b50000007e0000073d000002dd00000000000000000780')",
-          "pretty-print": "       b >     ~ =       "
+          "repr(QByteArray.hex)": "QtCore.QByteArray('01d9d0cb000200000000049e0000003e00000728000002ba0000049f0000005a00000727000002b900000000000000000780')",
+          "pretty-print": "       > (     Z '       "
         },
         "state": {
           "type": "repr(QByteArray.hex)",
-          "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff00000000fd00000001000000030000028900000231fc0100000001fb0000004e007200710074005f00640072005f00730069006e0067006c0065005f005f00640072005f00730069006e0067006c0065005f005f0031005f005f0044007200530069006e0067006c0065005500690100000000000002890000013600ffffff000002890000000000000004000000040000000800000008fc00000001000000030000000100000036004d0069006e0069006d0069007a006500640044006f0063006b00570069006400670065007400730054006f006f006c0062006100720000000000ffffffff0000000000000000')",
-          "pretty-print": "                 Nrqt_dr_single__dr_single__1__DrSingleUi                            6MinimizedDockWidgetsToolbar        "
+          "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff00000000fd00000001000000030000028900000231fc0100000001fc00000000000002890000014c00fffffffc0200000002fb0000004e007200710074005f00640072005f00730069006e0067006c0065005f005f00640072005f00730069006e0067006c0065005f005f0031005f005f0044007200530069006e0067006c0065005500690100000019000000df0000008700fffffffb0000004e007200710074005f00640072005f00730069006e0067006c0065005f005f00640072005f00730069006e0067006c0065005f005f0032005f005f0044007200530069006e0067006c00650055006901000000fe0000014c0000008700ffffff000002890000000000000004000000040000000800000008fc00000001000000030000000100000036004d0069006e0069006d0069007a006500640044006f0063006b00570069006400670065007400730054006f006f006c0062006100720000000000ffffffff0000000000000000')",
+          "pretty-print": "                     L                                                                                                    L                                                            "
         }
       },
       "groups": {
