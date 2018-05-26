@@ -55,8 +55,31 @@ class TransformPointCloud
     }
   }
 
+  void scalePointCloud(sensor_msgs::PointCloud2& pc,
+      const double sx, const double sy, const double sz)
+  {
+    if ((sx == 1.0) && (sy == 1.0) && (sz == 1.0))
+      return;
+    // https://answers.ros.org/question/11556/datatype-to-access-pointcloud2/
+    sensor_msgs::PointCloud2Iterator<float> iter_x(pc, "x");
+    sensor_msgs::PointCloud2Iterator<float> iter_y(pc, "y");
+    sensor_msgs::PointCloud2Iterator<float> iter_z(pc, "z");
+    size_t count = 0;
+    for (; (iter_x != iter_x.end()) && (iter_y != iter_y.end()) && (iter_z != iter_z.end());
+         ++iter_x, ++ iter_y, ++iter_z, ++count)
+    {
+      *iter_x *= sx;
+      *iter_y *= sy;
+      *iter_z *= sz;
+    }
+  }
+
   void pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg)
   {
+    // TODO(lucasw) actually subscribe and unsubscribe in config callback?
+    if (!config_.enable)
+      return;
+
     // ROS_INFO_STREAM(msg->header.frame_id << " " << target_frame_);
     ROS_DEBUG_STREAM("input:");
     printPointCloud(*msg, 8);
@@ -77,7 +100,9 @@ class TransformPointCloud
           ros::Duration(config_.timeout));
       sensor_msgs::PointCloud2 cloud_out;
       tf2::doTransform(*msg, cloud_out, transform);
+      scalePointCloud(cloud_out, config_.scale_x, config_.scale_y, config_.scale_z);
       ROS_DEBUG_STREAM("output:");
+      // TODO(lwalter) should the scaling be done on the output?
       printPointCloud(cloud_out, 8);
       pub_.publish(cloud_out);
     }
