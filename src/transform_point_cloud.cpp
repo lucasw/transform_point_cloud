@@ -115,10 +115,10 @@ class TransformPointCloud
 
 public:
   TransformPointCloud() :
-    nh_("~"),
+    // nh_("~"),
     tf_listener_(tf_buffer_)
   {
-    server_.reset(new ReconfigureServer(dr_mutex_, nh_));
+    server_.reset(new ReconfigureServer(dr_mutex_));  //, nh_));
     dynamic_reconfigure::Server<transform_point_cloud::LookupTransformConfig>::CallbackType cbt =
         boost::bind(&TransformPointCloud::drCallback, this, _1, _2);
     server_->setCallback(cbt);
