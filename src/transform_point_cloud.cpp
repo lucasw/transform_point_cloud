@@ -15,6 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <geometry_msgs/TransformStamped.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
+#include <string>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <transform_point_cloud/LookupTransformConfig.h>
@@ -49,7 +50,7 @@ class TransformPointCloud
     size_t count = 0;
     for (; (iter_x != iter_x.end()) && (iter_y != iter_y.end()) && (iter_z != iter_z.end()) &&
          (count < max_count);
-         ++iter_x, ++ iter_y, ++iter_z, ++count)
+         ++iter_x, ++iter_y, ++iter_z, ++count)
     {
       ROS_DEBUG_STREAM(count << " " << *iter_x << " " << *iter_y << " " << *iter_z);
     }
@@ -66,7 +67,7 @@ class TransformPointCloud
     sensor_msgs::PointCloud2Iterator<float> iter_z(pc, "z");
     size_t count = 0;
     for (; (iter_x != iter_x.end()) && (iter_y != iter_y.end()) && (iter_z != iter_z.end());
-         ++iter_x, ++ iter_y, ++iter_z, ++count)
+         ++iter_x, ++iter_y, ++iter_z, ++count)
     {
       *iter_x *= sx;
       *iter_y *= sy;
