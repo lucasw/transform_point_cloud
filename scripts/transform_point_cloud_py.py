@@ -5,7 +5,6 @@ import tf2_ros
 import tf2_py as tf2
 
 from dynamic_reconfigure.server import Server
-from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import PointCloud2
 from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
 from transform_point_cloud.cfg import LookupTransformConfig
@@ -42,6 +41,7 @@ class TransformPointCloud:
             return
         cloud_out = do_transform_cloud(msg, trans)
         self.pub.publish(cloud_out)
+
 
 if __name__ == '__main__':
     rospy.init_node('transform_point_cloud')
