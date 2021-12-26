@@ -11,6 +11,7 @@
       type="transform_point_cloud_py.py"
       output="screen" >
     <param name="target_frame" value="frame2" />
+    <remap from="point_cloud_transformed" to="point_cloud_transformed_py" />
   </node>
 
   <node name="generate_point_cloud" pkg="transform_point_cloud"
@@ -31,7 +32,6 @@
 
   <node name="rqt" pkg="rqt_gui" type="rqt_gui"
       args="--perspective-file $(find transform_point_cloud)/config/lookup.perspective"
-      required="true"
       output="screen">
   </node>
 
