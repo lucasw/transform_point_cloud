@@ -2,6 +2,7 @@
 # Sample code to publish a PointCloud2 with python
 import struct
 
+import numpy as np
 import rospy
 from sensor_msgs import point_cloud2
 from sensor_msgs.msg import PointCloud2, PointField
@@ -14,7 +15,9 @@ class GeneratePointCloud:
 
         i = 0
         while not rospy.is_shutdown():
+            t0 = rospy.Time.now()
             self.pub_cube(i % 16 + 1)
+            rospy.logdebug((rospy.Time.now() - t0).to_sec())
             i += 1
             rospy.sleep(1.0)
 
@@ -27,13 +30,13 @@ class GeneratePointCloud:
                     y = float(j) / lim
                     z = float(k) / lim
                     pt = [x, y, z, 0]
-                    r = int(x * 255.0)
-                    g = int(y * 255.0)
-                    b = int(z * 255.0)
+                    r = np.uint8(x * 255.0)
+                    g = np.uint8(y * 255.0)
+                    b = np.uint8(z * 255.0)
                     a = 255
-                    # print r, g, b, a
+                    # print(r, g, b, a)
                     rgb = struct.unpack('I', struct.pack('BBBB', b, g, r, a))[0]
-                    # print hex(rgb)
+                    # print(hex(rgb))
                     pt[3] = rgb
                     points.append(pt)
 
