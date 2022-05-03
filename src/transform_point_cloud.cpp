@@ -121,7 +121,7 @@ public:
   {
     server_.reset(new ReconfigureServer(dr_mutex_));  //, nh_));
     dynamic_reconfigure::Server<transform_point_cloud::LookupTransformConfig>::CallbackType cbt =
-        boost::bind(&TransformPointCloud::drCallback, this, _1, _2);
+        boost::bind(&TransformPointCloud::drCallback, this, boost::placeholders::_1, boost::placeholders::_2);
     server_->setCallback(cbt);
 
     pub_ = nh_.advertise<sensor_msgs::PointCloud2>("point_cloud_transformed", 3);
