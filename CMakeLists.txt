@@ -49,6 +49,7 @@ install(TARGETS
 )
 
 install(PROGRAMS
+  scripts/aggregate_point_cloud.py
   scripts/generate_point_cloud.py
   scripts/${PROJECT_NAME}_py.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
