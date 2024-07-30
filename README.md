@@ -12,3 +12,9 @@ roslaunch transform_point_cloud demo.launch
 ![rviz and rqt demo.launch](data/transform_point_cloud.png)
 
 In the image above the point cloud originally has map for a frame_id, but the parameters transform the points to relative to frame2 by the same amount, with frame1 as the new frame_id.
+
+# rust
+
+```
+ROS_PACKAGE_PATH=`rospack find geometry_msgs`:`rospack find tf2_msgs`:`rospack find sensor_msgs`:`rospack find std_msgs`:`rospack find actionlib_msgs` cargo build --release
+```

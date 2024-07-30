@@ -1,0 +1,40 @@
+[package]
+name = "transform_point_cloud"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "BSD 3-Clause"
+publish = false
+description = """
+Transform a PointCloud2 with roslibrust
+"""
+
+[dependencies]
+anyhow = "1.0.86"
+nalgebra = "0.30"
+# opencv = "0.92.1"
+tokio = "1.38.0"
+
+# [dependencies.ros_pointcloud2]
+# path = "../../../../../../other/src/rust/ros_pointcloud2/rpcl2"
+# # git = "https://github.com/lucasw/ros_pointcloud2.git"
+# # branch = "roslibrust"
+# features = ["roslibrust_msg"]
+
+[dependencies.roslibrust]
+git = "https://github.com/lucasw/roslibrust.git"
+branch = "master"
+features = ["ros1"]
+
+[dependencies.roslibrust_codegen]
+git = "https://github.com/lucasw/roslibrust.git"
+branch = "master"
+
+[dependencies.roslibrust_codegen_macro]
+git = "https://github.com/lucasw/roslibrust.git"
+branch = "master"
+
+# cargo update tf_roslibrust to get latest version in this branch
+[dependencies.tf_roslibrust]
+git = "https://github.com/lucasw/rustros_tf.git"
+branch = "roslibrust"
