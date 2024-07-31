@@ -16,16 +16,16 @@ nalgebra = "0.30"
 tokio = "1.38.0"
 
 [dependencies.roslibrust]
-git = "https://github.com/lucasw/roslibrust.git"
+git = "https://github.com/Carter12s/roslibrust.git"
 branch = "master"
 features = ["ros1"]
 
 [dependencies.roslibrust_codegen]
-git = "https://github.com/lucasw/roslibrust.git"
+git = "https://github.com/Carter12s/roslibrust.git"
 branch = "master"
 
 [dependencies.roslibrust_codegen_macro]
-git = "https://github.com/lucasw/roslibrust.git"
+git = "https://github.com/Carter12s/roslibrust.git"
 branch = "master"
 
 # cargo update tf_roslibrust to get latest version in this branch
