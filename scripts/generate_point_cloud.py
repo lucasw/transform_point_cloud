@@ -53,7 +53,7 @@ class GeneratePointCloud:
         header.stamp = rospy.Time.now()
         header.frame_id = "map"
         pc2 = point_cloud2.create_cloud(header, fields, points)
-        print(f"send {len(pc2.data)} data bytes, {pc2.width} x {pc2.height}")
+        rospy.loginfo(f"send {len(pc2.data)} data bytes, {pc2.width} x {pc2.height}")
         pc2.header.stamp = rospy.Time.now()
         self.pub.publish(pc2)
 

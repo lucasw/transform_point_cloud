@@ -13,9 +13,95 @@ use tf_roslibrust::{
 };
 use tokio::time::Duration;
 
+use ros_pointcloud2::prelude::PointXYZ;
+
 // this is already done in ros_pointcloud2, but that was fine in the case of tf_roslibrust and
 // tf_demo- is there something in the structure of ros_pointcloud2 that breaks this?
 roslibrust_codegen_macro::find_and_generate_ros_messages!();
+
+// copy paste from ros_pointcloud2/rpcl2/src/ros.rs,
+// but couldn't get that to work
+impl From<sensor_msgs::PointCloud2> for ros_pointcloud2::PointCloud2Msg {
+    fn from(msg: sensor_msgs::PointCloud2) -> Self {
+        Self {
+            header: ros_pointcloud2::ros::HeaderMsg {
+                seq: msg.header.seq,
+                stamp: ros_pointcloud2::ros::TimeMsg {
+                    sec: msg.header.stamp.secs as i32,
+                    nanosec: msg.header.stamp.nsecs,
+                },
+                frame_id: msg.header.frame_id,
+            },
+            dimensions: ros_pointcloud2::CloudDimensions {
+                width: msg.width,
+                height: msg.height,
+            },
+            fields: msg
+                .fields
+                .into_iter()
+                .map(|field| ros_pointcloud2::ros::PointFieldMsg {
+                    name: field.name,
+                    offset: field.offset,
+                    datatype: field.datatype,
+                    count: field.count,
+                })
+                .collect(),
+            endian: if msg.is_bigendian {
+                ros_pointcloud2::Endian::Big
+            } else {
+                ros_pointcloud2::Endian::Little
+            },
+            point_step: msg.point_step,
+            row_step: msg.row_step,
+            data: msg.data,
+            dense: if msg.is_dense {
+                ros_pointcloud2::Denseness::Dense
+            } else {
+                ros_pointcloud2::Denseness::Sparse
+            },
+        }
+    }
+}
+
+impl From<ros_pointcloud2::PointCloud2Msg> for sensor_msgs::PointCloud2 {
+    fn from(msg: ros_pointcloud2::PointCloud2Msg) -> Self {
+        sensor_msgs::PointCloud2 {
+            header: std_msgs::Header {
+                seq: msg.header.seq,
+                stamp: roslibrust_codegen::Time {
+                    secs: msg.header.stamp.sec as u32,
+                    nsecs: msg.header.stamp.nanosec,
+                },
+                frame_id: msg.header.frame_id,
+            },
+            height: msg.dimensions.height,
+            width: msg.dimensions.width,
+            fields: msg
+                .fields
+                .into_iter()
+                .map(|field| sensor_msgs::PointField {
+                    name: field.name,
+                    offset: field.offset,
+                    datatype: field.datatype,
+                    count: field.count,
+                })
+                .collect(),
+            is_bigendian: if msg.endian == ros_pointcloud2::Endian::Big {
+                true
+            } else {
+                false
+            },
+            point_step: msg.point_step,
+            row_step: msg.row_step,
+            data: msg.data,
+            is_dense: if msg.dense == ros_pointcloud2::Denseness::Dense {
+                true
+            } else {
+                false
+            },
+        }
+    }
+}
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -122,7 +208,10 @@ async fn main() -> Result<(), anyhow::Error> {
                         // the error mentions ros_pointcloud2::prelude::sensor_msgs;
                         // let pc2_msg1: ros_pointcloud2::prelude::sensor_msgs::PointCloud2 = pc2_msg;
                         let pc: ros_pointcloud2::PointCloud2Msg = pc2_msg.into();  // .try_into_iter().unwrap();
-                        // println!("{pc:?}");
+                        let points: Vec<PointXYZ> = pc.try_into_vec().unwrap();
+                        for pt in points {
+                            println!("{pt:?}");
+                        }
                     },
                     Some(Err(error)) => {
                         println!("rx error: {error}");
