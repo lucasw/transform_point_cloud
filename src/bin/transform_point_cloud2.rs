@@ -2,18 +2,16 @@
 /// of the camera fov and the xy plane in the target frame, publish out as a marker and polygon
 /// based on camera_info_to_plane.py/.cpp and renamed to avoid rosrun confusion with the C++ node
 
-// use nalgebra::{Point3, Rotation, Rotation3};
+use nalgebra::point;  // , Rotation, Rotation3};
 use roslibrust::ros1::{NodeHandle, Publisher};
 use std::collections::HashMap;
 use tf_roslibrust::{
-    // TfError,
+    TfError,
     TfListener,
     // tf_util,
-    // transforms::isometry_from_transform,
+    transforms::isometry_from_transform,
 };
 use tokio::time::Duration;
-
-use ros_pointcloud2::prelude::PointXYZ;
 
 // this is already done in ros_pointcloud2, but that was fine in the case of tf_roslibrust and
 // tf_demo- is there something in the structure of ros_pointcloud2 that breaks this?
@@ -155,6 +153,13 @@ async fn main() -> Result<(), anyhow::Error> {
     let nh = NodeHandle::new(&std::env::var("ROS_MASTER_URI")?, full_node_name)
         .await?;
 
+    let transformed_point_cloud_pub: Publisher<sensor_msgs::PointCloud2> = nh.advertise(&format!("{}/point_cloud_transformed_rust", ns.as_str()), 3).await?;
+
+    // TODO(lucasw) don't need channels yet but later switch away from tokio::select and use
+    // channels between threads/tasks?
+    // let (pc_tc, pc_rx) = tokio::sync::oneshot::channel();
+    let mut clouds_in = std::collections::VecDeque::new();
+
     // TODO(lucasw) remember leading ns or it won't work
     let mut point_cloud_sub = nh.subscribe::<sensor_msgs::PointCloud2>(&format!("{}/point_cloud", ns.as_str()), 10).await?;
 
@@ -207,11 +212,8 @@ async fn main() -> Result<(), anyhow::Error> {
                         // be generated twice like that?
                         // the error mentions ros_pointcloud2::prelude::sensor_msgs;
                         // let pc2_msg1: ros_pointcloud2::prelude::sensor_msgs::PointCloud2 = pc2_msg;
-                        let pc: ros_pointcloud2::PointCloud2Msg = pc2_msg.into();  // .try_into_iter().unwrap();
-                        let points: Vec<PointXYZ> = pc.try_into_vec().unwrap();
-                        for pt in points {
-                            println!("{pt:?}");
-                        }
+                        // tx.send(pc);
+                        clouds_in.push_back(pc2_msg);
                     },
                     Some(Err(error)) => {
                         println!("rx error: {error}");
@@ -220,6 +222,62 @@ async fn main() -> Result<(), anyhow::Error> {
                 }
             }
             _ = update_interval.tick() => {
+                let cloud_in = clouds_in.pop_front();
+                match cloud_in {
+                    None => {},
+                    Some(cloud_in) => {
+                        // TODO(lucasw) turn this into a function, return Some with enum that is the
+                        // transformed cloud to be published, the unused cloud to be re-queued,
+                        // an error (because there was a different error and don't
+                        // try transforming the same cloud later)
+                        let res = listener.lookup_transform(
+                            &target_frame,
+                            &cloud_in.header.frame_id,
+                            None,
+                        );
+                        match res {
+                            Ok(tfs) => {
+                                let stamp = cloud_in.header.stamp.clone();
+                                let cloud_in: ros_pointcloud2::PointCloud2Msg = cloud_in.into();  // .try_into_iter().unwrap();
+                                println!("{} to {}", cloud_in.header.frame_id, target_frame);
+                                let cloud_to_target = isometry_from_transform(&tfs.transform);
+                                // TODO(lucasw) once this is a function if this fails then
+                                // return the error
+                                let points_in: Vec<ros_pointcloud2::prelude::PointXYZ> = cloud_in.try_into_vec().unwrap();
+                                let mut points_out = Vec::new();
+                                for pt_in in points_in {  // .iter().take(10) {
+                                    let pt_in = point![pt_in.x as f64, pt_in.y as f64, pt_in.z as f64];
+                                    let pt_out = cloud_to_target * pt_in;
+                                    points_out.push(ros_pointcloud2::prelude::PointXYZ::new(
+                                            pt_out.x as f32,
+                                            pt_out.y as f32,
+                                            pt_out.z as f32,
+                                    ));
+                                    // println!("{pt:?}");
+                                }
+                                let pc_out = ros_pointcloud2::PointCloud2Msg::try_from_vec(points_out).unwrap();
+                                let mut pc_out_msg: sensor_msgs::PointCloud2 = pc_out.into();
+                                pc_out_msg.header.stamp = stamp;
+                                pc_out_msg.header.frame_id = target_frame.clone();
+                                transformed_point_cloud_pub.publish(&pc_out_msg).await?;
+
+                                // println!("{cloud_to_target:?}");
+                                println!("clouds left: {}", clouds_in.len());
+                            },
+                            Err(err) => match err {
+                                TfError::AttemptedLookUpInFuture(_, _) => {
+                                    print!("-");
+                                    // try to process again later
+                                    clouds_in.push_front(cloud_in);
+                                },
+                                _ => {
+                                    // give up on this point cloud with any other error
+                                    println!("lookup err, discarding point cloud {err:?}");
+                                },
+                            },
+                        }
+                    },
+                }  // handle input cloud
             },  // update
         }  // tokio select loop
     }
