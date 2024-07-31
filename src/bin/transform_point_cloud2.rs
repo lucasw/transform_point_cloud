@@ -8,11 +8,13 @@ use std::collections::HashMap;
 use tf_roslibrust::{
     // TfError,
     TfListener,
-    tf_util,
+    // tf_util,
     // transforms::isometry_from_transform,
 };
 use tokio::time::Duration;
 
+// this is already done in ros_pointcloud2, but that was fine in the case of tf_roslibrust and
+// tf_demo- is there something in the structure of ros_pointcloud2 that breaks this?
 roslibrust_codegen_macro::find_and_generate_ros_messages!();
 
 #[tokio::main]
@@ -118,7 +120,8 @@ async fn main() -> Result<(), anyhow::Error> {
                         // ros_pointcloud2 not the same as the one generated here?  Or they can't
                         // be generated twice like that?
                         // the error mentions ros_pointcloud2::prelude::sensor_msgs;
-                        // let pc: ros_pointcloud2::PointCloud2Msg = pc2_msg.try_into().unwrap();
+                        // let pc2_msg1: ros_pointcloud2::prelude::sensor_msgs::PointCloud2 = pc2_msg;
+                        let pc: ros_pointcloud2::PointCloud2Msg = pc2_msg.into();  // .try_into_iter().unwrap();
                         // println!("{pc:?}");
                     },
                     Some(Err(error)) => {
