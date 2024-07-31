@@ -14,9 +14,11 @@ class GeneratePointCloud:
         self.pub = rospy.Publisher("point_cloud", PointCloud2, queue_size=2)
 
         i = 0
+        size_limit = rospy.get_param("~size_limit", 16)
+
         while not rospy.is_shutdown():
             t0 = rospy.Time.now()
-            self.pub_cube(i % 16 + 1)
+            self.pub_cube(i % size_limit + 1)
             rospy.logdebug((rospy.Time.now() - t0).to_sec())
             i += 1
             rospy.sleep(1.0)
@@ -51,6 +53,7 @@ class GeneratePointCloud:
         header.stamp = rospy.Time.now()
         header.frame_id = "map"
         pc2 = point_cloud2.create_cloud(header, fields, points)
+        print(f"send {len(pc2.data)} data bytes, {pc2.width} x {pc2.height}")
         pc2.header.stamp = rospy.Time.now()
         self.pub.publish(pc2)
 
