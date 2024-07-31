@@ -15,12 +15,6 @@ nalgebra = "0.30"
 # opencv = "0.92.1"
 tokio = "1.38.0"
 
-# [dependencies.ros_pointcloud2]
-# path = "../../../../../../other/src/rust/ros_pointcloud2/rpcl2"
-# # git = "https://github.com/lucasw/ros_pointcloud2.git"
-# # branch = "roslibrust"
-# features = ["roslibrust_msg"]
-
 [dependencies.roslibrust]
 git = "https://github.com/lucasw/roslibrust.git"
 branch = "master"
@@ -38,3 +32,9 @@ branch = "master"
 [dependencies.tf_roslibrust]
 git = "https://github.com/lucasw/rustros_tf.git"
 branch = "roslibrust"
+
+[dependencies.ros_pointcloud2]
+path = "../../../../../../other/src/rust/ros_pointcloud2/rpcl2"
+# # git = "https://github.com/lucasw/ros_pointcloud2.git"
+# # branch = "roslibrust"
+features = ["roslibrust_msg"]
