@@ -10,31 +10,30 @@ Transform a PointCloud2 with roslibrust
 """
 
 [dependencies]
-anyhow = "1.0.86"
+anyhow = "1.0.88"
+clap = "4.5.27"
+log = "0.4.22"
 nalgebra = "0.30"
-# opencv = "0.92.1"
+simple_logger = "5.0.0"
 tokio = "1.38.0"
 
 [dependencies.roslibrust]
-git = "https://github.com/Carter12s/roslibrust.git"
-branch = "master"
+git = "https://github.com/lucasw/roslibrust"
+branch = "get_rx_msg_def_v0_12"
+# version="0.10.2"
 features = ["ros1"]
 
-[dependencies.roslibrust_codegen]
-git = "https://github.com/Carter12s/roslibrust.git"
-branch = "master"
+[dependencies.roslibrust_util]
+git = "https://github.com/lucasw/tf_roslibrust"
+version = "0.2.0"
 
-[dependencies.roslibrust_codegen_macro]
-git = "https://github.com/Carter12s/roslibrust.git"
-branch = "master"
-
-# cargo update tf_roslibrust to get latest version in this branch
 [dependencies.tf_roslibrust]
-git = "https://github.com/lucasw/rustros_tf.git"
-branch = "roslibrust"
+git = "https://github.com/lucasw/tf_roslibrust"
+version = "0.2.5"
 
 [dependencies.ros_pointcloud2]
-# path = "../../../../../../other/src/rust/ros_pointcloud2/rpcl2"
+# path = "../ros_pointcloud2/ros_pointcloud2"
 git = "https://github.com/lucasw/ros_pointcloud2.git"
 branch = "roslibrust"
+version = "0.6.0"
 features = ["roslibrust_msg"]
