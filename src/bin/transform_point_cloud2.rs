@@ -20,7 +20,8 @@ use tf_roslibrust::{
 };
 use tokio::time::Duration;
 
-/// return true if the cloud ought to be retried later
+/// return either a point cloud to publish in the first slot, or return the input point cloud
+/// unchanged
 fn transform_point_cloud(
     cloud_in: sensor_msgs::PointCloud2,
     listener: &TfListener,
@@ -42,7 +43,7 @@ fn transform_point_cloud(
         Ok(tfs) => {
             let stamp = cloud_in.header.stamp.clone();
             let cloud_in: ros_pointcloud2::PointCloud2Msg = cloud_in.into(); // .try_into_iter().unwrap();
-            log::info!("{} to {}", cloud_in.header.frame_id, target_frame);
+            log::debug!("{} to {}", cloud_in.header.frame_id, target_frame);
             let cloud_to_target = isometry_from_transform(&tfs.transform);
             // TODO(lucasw) once this is a function if this fails then
             // return the error
@@ -115,7 +116,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let point_cloud_out_topic = remaps.get("point_cloud_out").unwrap();
     log::info!("publishing on '{point_cloud_out_topic}'");
     let transformed_point_cloud_pub = nh
-        .advertise::<sensor_msgs::PointCloud2>(point_cloud_out_topic, 3, false)
+        .advertise::<sensor_msgs::PointCloud2>(point_cloud_out_topic, 30, false)
         .await?;
 
     // TODO(lucasw) don't need channels yet but later switch away from tokio::select and use
@@ -126,13 +127,13 @@ async fn main() -> Result<(), anyhow::Error> {
     let point_cloud_in_topic = remaps.get("point_cloud_in").unwrap();
     log::info!("subscribing to '{point_cloud_in_topic}'");
     let mut point_cloud_sub = nh
-        .subscribe::<sensor_msgs::PointCloud2>(point_cloud_in_topic, 10)
+        .subscribe::<sensor_msgs::PointCloud2>(point_cloud_in_topic, 30)
         .await?;
 
     let listener = TfListener::new(&nh).await;
 
     // TODO(lucasw) make this a queue
-    let mut update_interval = tokio::time::interval(Duration::from_millis(50));
+    let mut update_interval = tokio::time::interval(Duration::from_millis(10));
     let mut count = 0;
 
     loop {
@@ -169,21 +170,25 @@ async fn main() -> Result<(), anyhow::Error> {
                 }
             }
             _ = update_interval.tick() => {
-                let cloud_in = clouds_in.pop_front();
-                match cloud_in {
-                    None => {},
-                    Some(cloud_in) => {
-                        let (pc_out_msg, retry_cloud_in) = transform_point_cloud(cloud_in, &listener, target_frame);
-                        if let Some(retry_cloud_in) = retry_cloud_in {
-                            clouds_in.push_front(retry_cloud_in);
-                        }
-                        if let Some(pc_out_msg) = pc_out_msg {
-                            transformed_point_cloud_pub.publish(&pc_out_msg).await?;
-                            // log::info!("{cloud_to_target:?}");
-                            log::info!("clouds left: {}", clouds_in.len());
-                        }
-                    },
-                }  // handle input cloud
+                log::info!("clouds left: {}", clouds_in.len());
+                for _ in 0..20 {
+                    let cloud_in = clouds_in.pop_front();
+                    match cloud_in {
+                        None => {
+                            break;
+                        },
+                        Some(cloud_in) => {
+                            let (pc_out_msg, retry_cloud_in) = transform_point_cloud(cloud_in, &listener, target_frame);
+                            if let Some(retry_cloud_in) = retry_cloud_in {
+                                clouds_in.push_front(retry_cloud_in);
+                            }
+                            if let Some(pc_out_msg) = pc_out_msg {
+                                transformed_point_cloud_pub.publish(&pc_out_msg).await?;
+                                // log::info!("{cloud_to_target:?}");
+                            }
+                        },
+                    }  // handle input cloud
+                }
             },  // update
         } // tokio select loop
     }
