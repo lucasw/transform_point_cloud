@@ -7,80 +7,11 @@ cargo run --release -- _target_frame:=base_link point_cloud_in:=/sensor/point_cl
 */
 
 use clap::command;
-use nalgebra::point; // , Rotation, Rotation3};
 use roslibrust::ros1::NodeHandle;
 use roslibrust_util::sensor_msgs;
 use std::collections::HashMap;
-use tf_roslibrust::{
-    // tf_util,
-    transforms::isometry_from_transform,
-    LookupTransform,
-    TfError,
-    TfListener,
-};
+use tf_roslibrust::TfListener;
 use tokio::time::Duration;
-
-/// return either a point cloud to publish in the first slot, or return the input point cloud
-/// unchanged
-fn transform_point_cloud(
-    cloud_in: sensor_msgs::PointCloud2,
-    listener: &TfListener,
-    target_frame: &str,
-) -> (
-    Option<sensor_msgs::PointCloud2>,
-    Option<sensor_msgs::PointCloud2>,
-) {
-    // TODO(lucasw) turn this into a function, return Some with enum that is the
-    // transformed cloud to be published, the unused cloud to be re-queued,
-    // an error (because there was a different error and don't
-    // try transforming the same cloud later)
-    let res = listener.lookup_transform(
-        target_frame,
-        &cloud_in.header.frame_id,
-        Some(cloud_in.header.stamp.clone()),
-    );
-    match res {
-        Ok(tfs) => {
-            let stamp = cloud_in.header.stamp.clone();
-            let cloud_in: ros_pointcloud2::PointCloud2Msg = cloud_in.into(); // .try_into_iter().unwrap();
-            log::debug!("{} to {}", cloud_in.header.frame_id, target_frame);
-            let cloud_to_target = isometry_from_transform(&tfs.transform);
-            // TODO(lucasw) once this is a function if this fails then
-            // return the error
-            let points_in: Vec<ros_pointcloud2::prelude::PointXYZ> =
-                cloud_in.try_into_vec().unwrap();
-            let mut points_out = Vec::new();
-            for pt_in in points_in {
-                // .iter().take(10) {
-                let pt_in = point![pt_in.x as f64, pt_in.y as f64, pt_in.z as f64];
-                let pt_out = cloud_to_target * pt_in;
-                points_out.push(ros_pointcloud2::prelude::PointXYZ::new(
-                    pt_out.x as f32,
-                    pt_out.y as f32,
-                    pt_out.z as f32,
-                ));
-                // log::info!("{pt:?}");
-            }
-            let pc_out = ros_pointcloud2::PointCloud2Msg::try_from_vec(points_out).unwrap();
-            let mut pc_out_msg: sensor_msgs::PointCloud2 = pc_out.into();
-            pc_out_msg.header.stamp = stamp;
-            pc_out_msg.header.frame_id = target_frame.to_string();
-            (Some(pc_out_msg), None)
-        }
-        Err(err) => match err {
-            TfError::AttemptedLookupInFuture(_, _, _) => {
-                // print!("-");
-                // try to process again later
-                (None, Some(cloud_in))
-            }
-            _ => {
-                // give up on this point cloud with any other error
-                log::warn!("lookup err, discarding point cloud {err:?}");
-                (None, None)
-            }
-        },
-    }
-}
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -151,7 +82,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 match rv {
                     Some(Ok(pc2_msg)) => {
                         count += 1;
-                        if count % 200 == 0 {
+                        if count % 600 == 0 {
                             log::info!("{} bytes, {} x {}", pc2_msg.data.len(), pc2_msg.width, pc2_msg.height);
                         }
                         // TODO(lucasw) this doesn't work, maybe didn't implement the From
@@ -170,7 +101,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 }
             }
             _ = update_interval.tick() => {
-                log::info!("clouds left: {}", clouds_in.len());
+                log::debug!("clouds left: {}", clouds_in.len());
                 for _ in 0..20 {
                     let cloud_in = clouds_in.pop_front();
                     match cloud_in {
@@ -178,7 +109,7 @@ async fn main() -> Result<(), anyhow::Error> {
                             break;
                         },
                         Some(cloud_in) => {
-                            let (pc_out_msg, retry_cloud_in) = transform_point_cloud(cloud_in, &listener, target_frame);
+                            let (pc_out_msg, retry_cloud_in) = transform_point_cloud::transform_point_cloud_with_listener(cloud_in, &listener, target_frame);
                             if let Some(retry_cloud_in) = retry_cloud_in {
                                 clouds_in.push_front(retry_cloud_in);
                             }
