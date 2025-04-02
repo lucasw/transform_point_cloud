@@ -81,6 +81,11 @@ class TransformPointCloud
     if (!config_.enable)
       return;
 
+    if (msg->width * msg->height < 1) {
+      ROS_WARN_STREAM("empty point cloud " << msg->width << " " << msg->height);
+      return;
+    }
+
     // ROS_INFO_STREAM(msg->header.frame_id << " " << target_frame_);
     ROS_DEBUG_STREAM("input:");
     printPointCloud(*msg, 8);
