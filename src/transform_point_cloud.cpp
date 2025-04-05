@@ -81,7 +81,8 @@ class TransformPointCloud
     if (!config_.enable)
       return;
 
-    if (msg->width * msg->height < 1) {
+    if (msg->width * msg->height < 1)
+    {
       ROS_WARN_STREAM("empty point cloud " << msg->width << " " << msg->height);
       return;
     }
