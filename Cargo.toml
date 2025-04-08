@@ -15,7 +15,7 @@ clap = "4.5.27"
 log = "0.4.22"
 nalgebra = "0.30"
 simple_logger = "5.0.0"
-tokio = "1.38.0"
+tokio = "1.43.1"
 
 [dependencies.roslibrust]
 git = "https://github.com/lucasw/roslibrust"
