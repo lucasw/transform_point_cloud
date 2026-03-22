@@ -27,6 +27,7 @@ async fn main() -> Result<(), anyhow::Error> {
         let mut remaps = HashMap::<String, String>::new();
         remaps.insert("point_cloud_in".to_string(), "point_cloud_in".to_string());
         remaps.insert("point_cloud_out".to_string(), "point_cloud_out".to_string());
+        remaps.insert("use_reception_time".to_string(), "false".to_string());
 
         let (_ns, full_node_name, remaining_args) =
             roslibrust_util::get_params_remaps(&mut params, &mut remaps);
@@ -63,6 +64,8 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let listener = TfListener::new(&nh).await;
 
+    let use_reception_time: bool = params.get("use_reception_time").unwrap().parse()?;
+    log::warn!("use reception time: {use_reception_time}");
     // TODO(lucasw) make this a queue
     let mut update_interval = tokio::time::interval(Duration::from_millis(10));
     let mut count = 0;
@@ -80,10 +83,18 @@ async fn main() -> Result<(), anyhow::Error> {
                 // print!("c");
                 // let t0 = tf_util::duration_now();
                 match rv {
-                    Some(Ok(pc2_msg)) => {
+                    Some(Ok(mut pc2_msg)) => {
                         count += 1;
                         if count % 600 == 0 {
                             log::info!("{} bytes, {} x {}", pc2_msg.data.len(), pc2_msg.width, pc2_msg.height);
+                        }
+                        if use_reception_time {
+                            use roslibrust::codegen::integral_types::Time as RosTime;
+                            let cur = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?;
+                            pc2_msg.header.stamp = RosTime {
+                                secs: cur.as_secs() as i32,
+                                nsecs: cur.subsec_nanos() as i32,
+                            };
                         }
                         // TODO(lucasw) this doesn't work, maybe didn't implement the From
                         // properly- or the macro generated sensor_msgs::PointCloud2 inside
