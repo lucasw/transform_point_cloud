@@ -13,27 +13,26 @@ Transform a PointCloud2 with roslibrust
 anyhow = "1.0.88"
 clap = "4.5.27"
 log = "0.4.22"
-nalgebra = "0.30"
+nalgebra = "0.33"
 simple_logger = "5.0.0"
 tokio = "1.38.0"
 
 [dependencies.roslibrust]
 git = "https://github.com/lucasw/roslibrust"
-branch = "get_rx_msg_def_v0_12"
-# version="0.10.2"
+branch = "get_rx_msg_def_v0_16"
 features = ["ros1"]
 
 [dependencies.roslibrust_util]
 git = "https://github.com/lucasw/tf_roslibrust"
-version = "0.2.0"
+version = "0.16.0"
 
 [dependencies.tf_roslibrust]
 git = "https://github.com/lucasw/tf_roslibrust"
-version = "0.2.5"
+version = "0.16.0"
 
 [dependencies.ros_pointcloud2]
 # path = "../ros_pointcloud2/ros_pointcloud2"
 git = "https://github.com/lucasw/ros_pointcloud2.git"
 branch = "roslibrust"
-version = "0.6.0"
+version = "0.16.0"
 features = ["roslibrust_msg"]
