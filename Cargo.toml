@@ -24,11 +24,11 @@ features = ["ros1"]
 
 [dependencies.roslibrust_util]
 git = "https://github.com/lucasw/tf_roslibrust"
-version = "0.16.0"
+version = "0.16.2"
 
 [dependencies.tf_roslibrust]
 git = "https://github.com/lucasw/tf_roslibrust"
-version = "0.16.0"
+version = "0.16.2"
 
 [dependencies.ros_pointcloud2]
 # path = "../ros_pointcloud2/ros_pointcloud2"
